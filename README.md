@@ -1,3 +1,3 @@
-# STOchastic Recursive Momentum for Compositional Optimization
+<b>STOchastic Recursive Momentum for Compositional Optimization</b>
 
 
