@@ -1,2 +1,3 @@
-# Compositional-Gradients
-Compositional Gradient Descent Methods
+# STOchastic Recursive Momentum for Compositional Optimization
+
+
