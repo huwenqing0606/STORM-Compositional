@@ -1,7 +1,7 @@
 %%Runfile For STORM-Compositional over portfolio optimization problem
 
 %code between separating dashed lines are for STORM
-%code else where are adapted from SARAH-Compositional to make a comparison
+%code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
 
 %author: Wenqing Hu (Missouri S&T)
 
@@ -53,7 +53,7 @@ for di = 1:length(Problist)
     probID = Problist(di);
     name = Probname{probID};
     %load(strcat(Probname{Problist(di)},'.mat'));
-    load(strcat('~/文档/work_STORM-SCGD/STORM-Compositional_code/portfolio/data/', Probname{Problist(di)},'.mat'));
+    load(strcat('~/文档/work_STORM-SCGD/NeurIPS2020-code-submission-STORM-C/portfolio/data/', Probname{Problist(di)},'.mat'));
     %load data_cov_2;
     [n, d] = size(data);
     config.lr = lrlist(di);
@@ -70,19 +70,24 @@ for di = 1:length(Problist)
     config.beta = 0.9;
     config.opt = 1;
 
-    %----------------------------------------------------------------------
+%STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
+    
     %set the STORM single loop batchsizes, learning rate and the a parameters
     config.STORM_eps=0.1;
     config.STORM_max_inner_iters=20; 
-    %STORM only uses one loop, but we decompose it into epochs and each epoch has same iteration 
-    %as other compositional optimization algorithms
+    %STORM only uses one loop, but we decompose it into epochs and each epoch has same iteration as other compositional optimization algorithms
+    config.STORM_lr=0.1;
+    
     config.STORM_initial_bs=100;
     config.STORM_loop_bs_g=100;
+    config.STORM_loop_bs_G=100;
     config.STORM_loop_bs_F=100;
-    config.STORM_lr=0.1;
+
     config.STORM_a_g=0.01;
+    config.STORM_a_G=0.01;
     config.STORM_a_F=0.01;
-    %----------------------------------------------------------------------
+    
+%STORM-END-------------------------------------------------------------------------------------------------------------------------------
     
     [svrg, grad_svrg, norm_svrg] = opt_VR(data, config);
     grad_svrg = grad_svrg/n;
@@ -106,13 +111,16 @@ for di = 1:length(Problist)
     %[spider1, grad_spider1, norm_spider1] = opt_VRSCPG(data, config);
     %subplot(2, 3, di);
 
-    %----------------------------------------------------------------------
+ %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
+
     %the option of using STORM
     disp(Titlename(di));
     config.opt = 4;
     [storm, grad_storm, norm_storm] = opt_VR(data, config);
     grad_storm = grad_storm/n;
-    %----------------------------------------------------------------------
+    
+ %STORM-END-------------------------------------------------------------------------------------------------------------------------------
+
 
     %figure(di);
     %subplot(1, 2, 1);

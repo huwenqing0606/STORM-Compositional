@@ -21,10 +21,10 @@ resu_norm = zeros(1, config.max_epochs);
 
 %% initialize g, G, F by minibatch-sampling the initial batches
 if config.opt == 4
-    %----------------------------------------------------------------------
+%STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
     %initialize STORM g, G, F
-    [g, G, F] = GD(data, w, config.STORM_initial_bs);
-    %----------------------------------------------------------------------
+    [g, G, F] = STORM_GD(data, w, config.STORM_initial_bs);
+%STORM-END-------------------------------------------------------------------------------------------------------------------------------
 else
     [g, G, F] = GD(data, w, config.outer_bs);
     y = g;
@@ -33,19 +33,19 @@ end
 count = 0;
 
 if config.opt == 4
-    %----------------------------------------------------------------------
+%STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
     %opt=4 indicates the STORM algorithm, number of iteration=max_epoch*max_iters
     for epoch = 1:config.max_epochs
         tic;
         for iter = 1:config.STORM_max_inner_iters
-            [g, G, F] = STORM(data, w, w_t, g, G, F, config.STORM_loop_bs_g, config.STORM_loop_bs_F, config.STORM_a_g, config.STORM_a_F);
+            [g, G, F] = STORM(data, w, w_t, g, G, F, config.STORM_loop_bs_g, config.STORM_loop_bs_G, config.STORM_loop_bs_F, config.STORM_a_g, config.STORM_a_G, config.STORM_a_F);
             w_t = w;
             w_tilde = w - config.STORM_lr * F;
-            gamma= min(1/2, config.STORM_eps/norm(F));
+            gamma= min(1/2, config.STORM_eps/norm(F)); %normalization step in STORM-Compositional Algorithm
             w = w + gamma * (w_tilde-w);
             x = x + w;
-            count = count +1; 
-            grad_cal = grad_cal + config.STORM_loop_bs_g*2 + config.STORM_loop_bs_F; %store how many gradient queries are taken
+            count = count + 1; 
+            grad_cal = grad_cal + config.STORM_loop_bs_g + config.STORM_loop_bs_G + config.STORM_loop_bs_F; %store how many gradient queries are taken
             if config.l1 ~= 0
                 w = sign(w).* max(0, abs(w)-config.l1);
             end
@@ -62,7 +62,7 @@ if config.opt == 4
         resu_norm(epoch) = norm_F;
         resu_cal(epoch) = grad_cal; 
     end
-    %----------------------------------------------------------------------
+%STORM-END-------------------------------------------------------------------------------------------------------------------------------
 else
     for epoch = 1:config.max_epochs
         tic;
@@ -233,16 +233,44 @@ end
 
 
 
-%--------------------------------------------------------------------------
+%STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
+
+%The STORM gradient initialization
+function [g, G, F] = STORM_GD(data, w, batch_size)
+    d = length(w);
+    n = size(data, 1);%The shape is n*d
+    %Choose batch of batch size batch_size
+    indexes = randperm(n);
+    indexes = indexes(1:batch_size);        %sample without replacement    
+    %indexes = datasample([1:n], batch_size); %sample with replacement
+%% compute g
+    g_mat = repmat(w, batch_size, 1);
+    g_mat(:, d+1) = data(indexes, :) * w';
+    g = mean(g_mat);
+%% compute G
+    G = diag(ones(d, 1));
+    G(d+1, :) = mean(data(indexes, :));
+%% compute F
+    mid = 2 * mean(data(indexes, :) * g(1:d)')- g(d+1);  
+            %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
+    r = mean(data(indexes, :));
+    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (g(d + 1)+1) * r;
+            %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
+    F_dev(d+1) = -mid;
+%% compute gradient
+    F = F_dev * G;
+end
+
+
 %The STORM estimator for portfolio management problem
-function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_F, a_g, a_F)
+function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, batch_size_F, a_g, a_G, a_F)
     d = length(w);    %d is here N+1
-    n = size(data, 1);%n is here N. The shape is n*d
+    n = size(data, 1);%n is here . The shape is n*d
 %% compute g
     %Choose batch B_{t+1}^g of batch size batch_size
     indexes = randperm(n);
-    indexes = indexes(1:batch_size_g);
-    %indexes = datasample([1:n], batch_size);
+    indexes = indexes(1:batch_size_g);        %sample without replacement    
+    %indexes = datasample([1:n], batch_size_g); %sample with replacement
     %g(x_{t+1}, B_{t+1}^g) before taking the mean
     g_mat = repmat(w, batch_size_g, 1);
     g_mat(:, d+1) = data(indexes, :) * w';
@@ -252,6 +280,7 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_F, a_
     %g_t
     g_t = g;
     %%calculate g_{t+1} = (1-a_g)g_t + a_g g(x_{t+1}, B_{t+1}^g) + (1-a_g)[g(x_{t+1}, B_{t+1}^g)-g(x_t, B_{t+1}^g)]
+    %                   = (1-a_g)g_t + g(x_{t+1}, B_{t+1}^g) - (1-a_g)g(x_t, B_{t+1}^g)
     g = (1-a_g)*g + mean(g_mat) - (1-a_g) * mean(g_mat_t);
 %% compute G = partial g at steps t and t+1 
     %due to the particular structure of the portfolio optimization problem they are both constant matrices
@@ -260,8 +289,8 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_F, a_
 %% compute grad f at steps t and t+1
     %Choose batch B_{t+1}^f of batch size batch_size
     indexes = randperm(n);
-    indexes = indexes(1:batch_size_F);
-    %indexes = datasample([1:n], batch_size);   
+    indexes = indexes(1:batch_size_F);             %sample without replaceemnt
+    %indexes = datasample([1:n], batch_size_F);      %sample with replacement
     %calculate grad f at step t+1
     mid = 2 * mean(data(indexes, :) * g(1:d)')- g(d+1);
     r = mean(data(indexes, :));
@@ -274,6 +303,8 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_F, a_
     F_dev_t(d+1) = -mid_t;
     
 %% compute F update, gradient
+    %calculate F_{t+1}=(1-a_F)F_t + a_F G^Tgrad_f(x_{t+1}, B_{t+1}^f) + (1-a_F)[G^Tgrad_f(x_{t+1}, B_{t+1}^f)- G_t^Tgrad_f(x_t, B_t)]
+    %                 =(1-a_F)F_t + G^Tgrad_f(x_{t+1}, B_{t+1}^f) - (1-a_F) G_t^Tgrad_f(x_t, B_t)               
     F = (1-a_F) * F + F_dev * G - (1-a_F) * (F_dev_t * G_t);
 end
-%--------------------------------------------------------------------------
+%STORM-END-------------------------------------------------------------------------------------------------------------------------------
