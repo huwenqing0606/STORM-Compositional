@@ -20,27 +20,28 @@ config.l1 = 0;
 %sigma = u*s*u';
 %data = mvnrnd(mu, sigma, 2000);
 %save('data_cov_4.mat', 'data');
-Probname = {'Asia_Pacific_ex_Japan_OP', 'Europe_OP', 'Global_ex_US_OP', 'Global_OP', 'Japan_OP', 'North_America_OP'};
-Titlename = {'Asia Pacific ex Japan OP', 'Europe OP', 'Global ex US OP', 'Global OP', 'Japan OP', 'North America OP'};
+%Probname = {'Asia_Pacific_ex_Japan_OP', 'Europe_OP', 'Global_ex_US_OP', 'Global_OP', 'Japan_OP', 'North_America_OP'};
+%Titlename = {'Asia Pacific ex Japan OP', 'Europe OP', 'Global ex US OP', 'Global OP', 'Japan OP', 'North America OP'};
 %Probname = {'Asia_Pacific_ex_Japan_ME', 'Europe_ME', 'Global_ex_US_ME', 'Global_ME', 'Japan_ME', 'North_America_ME'}; 
 %Titlename = {'Asia Pacific ex Japan ME', 'Europe ME', 'Global ex US ME', 'Global ME', 'Japan ME', 'North America ME'};
 %Probname = {'Asia_Pacific_ex_Japan_OP'};
 %Titlename = {'Asia Pacific ex Japan OP'};
 %Probname = {'Global_ex_US_OP', 'Japan_OP', 'Global_OP', 'Asia_Pacific_ex_Japan_OP', 'Europe_OP', 'North_America_OP'};
 %Titlename = {'Global ex US OP', 'Japan OP', 'Global OP', 'Asia Pacific ex Japan OP', 'Europe OP', 'North America OP'};
-%Probname = {'data_cov_4', 'data_cov_20'};
-%Titlename = {'data cov 4', 'data cov 20'};
+Probname = {'data_cov_4', 'data_cov_20'};
+Titlename = {'data cov 4', 'data cov 20'};
 %Probname = {'ME'};
 %Probname = {'Global_ex_US_OP'};
 %Probname = {'Europe_OP'};
 %Probname = {'North_America_OP'};
-lrlist = [[1e-3, 5e-3, 5e-3]; [1e-3, 2e-3, 5e-4]; [1e-3, 2e-3, 5e-4];[1e-3, 5e-3, 5e-4];[1e-4, 1e-3, 5e-4];[1e-3, 2e-3, 5e-4]];
+%lrlist = [[1e-3, 5e-3, 5e-3]; [1e-3, 2e-3, 5e-4]; [1e-3, 2e-3, 5e-4];[1e-3, 5e-3, 5e-4];[1e-4, 1e-3, 5e-4];[1e-3, 2e-3, 5e-4]];
 %lrlist = [[1e-3, 5e-3, 5e-3]];%Asia_Pacific
 %lrlist = [[5e-5, 2e-4, 2e-4]];
 %lrlist = [[1e-4, 1e-2, 1.1e-2]];%Global_ex_US_OP
 %lrlist = [[1e-4, 1e-3, 1e-3]];%Japan_OP
 %lrlist = [2e-3, 1e-3, 1e-3, 2e-3, 1e-3, 1e-3];
-%lrlist = [2e-5, 2e-5];
+lrlist = [2e-5, 2e-5];
+
 nprob = length(Probname);
 Problist = [1:nprob];
 figure;
@@ -61,7 +62,7 @@ for di = 1:length(Problist)
     rng(1);
     minval = compute_min_val(data, config);
 
-    config.max_epochs = 100; %STORM shares the same epoch number with other Compositional Optimization algorithms
+    config.max_epochs = 500; %STORM shares the same epoch number with other Compositional Optimization algorithms
 
     config.gamma = 0.95;
     config.max_iters = 20; 
@@ -72,11 +73,16 @@ for di = 1:length(Problist)
 
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
     
+    %set do or not do normalization step in STORM
+    config.STORM_ifnormalization = 1;
+    %set with or without replacement in minibatch sampling in STORM, with replacement = 1
+    config.STORM_ifreplace = 1;
     %set the STORM single loop batchsizes, learning rate and the a parameters
-    config.STORM_eps=0.1;
-    config.STORM_max_inner_iters=20; 
+    config.STORM_eps = 0.1;
+    config.STORM_max_inner_iters = 20; 
     %STORM only uses one loop, but we decompose it into epochs and each epoch has same iteration as other compositional optimization algorithms
-    config.STORM_lr=0.1;
+    %if the batchsizes of STORM are small and cannot match the IFO queries of other Compositional algorithms, we tune this inner iteration to be larger correspondingly
+    config.STORM_lr = 0.1;
     
     config.STORM_initial_bs=100;
     config.STORM_loop_bs_g=100;

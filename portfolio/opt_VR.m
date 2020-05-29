@@ -23,7 +23,7 @@ resu_norm = zeros(1, config.max_epochs);
 if config.opt == 4
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
     %initialize STORM g, G, F
-    [g, G, F] = STORM_GD(data, w, config.STORM_initial_bs);
+    [g, G, F] = STORM_GD(data, w, config.STORM_initial_bs, config.STORM_ifreplace);
 %STORM-END-------------------------------------------------------------------------------------------------------------------------------
 else
     [g, G, F] = GD(data, w, config.outer_bs);
@@ -38,11 +38,15 @@ if config.opt == 4
     for epoch = 1:config.max_epochs
         tic;
         for iter = 1:config.STORM_max_inner_iters
-            [g, G, F] = STORM(data, w, w_t, g, G, F, config.STORM_loop_bs_g, config.STORM_loop_bs_G, config.STORM_loop_bs_F, config.STORM_a_g, config.STORM_a_G, config.STORM_a_F);
+            [g, G, F] = STORM(data, w, w_t, g, G, F, config.STORM_loop_bs_g, config.STORM_loop_bs_G, config.STORM_loop_bs_F, config.STORM_a_g, config.STORM_a_G, config.STORM_a_F, config.STORM_ifreplace);
             w_t = w;
             w_tilde = w - config.STORM_lr * F;
-            gamma= min(1/2, config.STORM_eps/norm(F)); %normalization step in STORM-Compositional Algorithm
-            w = w + gamma * (w_tilde-w);
+            if config.STORM_ifnormalization == 1
+                gamma = min(1/2, config.STORM_eps/norm(F)); %normalization step in STORM-Compositional Algorithm
+                w = w + gamma * (w_tilde-w);
+            else
+                w = w_tilde;
+            end
             x = x + w;
             count = count + 1; 
             grad_cal = grad_cal + config.STORM_loop_bs_g + config.STORM_loop_bs_G + config.STORM_loop_bs_F; %store how many gradient queries are taken
@@ -236,13 +240,16 @@ end
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
 
 %The STORM gradient initialization
-function [g, G, F] = STORM_GD(data, w, batch_size)
+function [g, G, F] = STORM_GD(data, w, batch_size, ifreplace)
     d = length(w);
     n = size(data, 1);%The shape is n*d
     %Choose batch of batch size batch_size
-    indexes = randperm(n);
-    indexes = indexes(1:batch_size);        %sample without replacement    
-    %indexes = datasample([1:n], batch_size); %sample with replacement
+    if ifreplace == 1
+        indexes = datasample([1:n], batch_size); %sample with replacement
+    else
+        indexes = randperm(n);
+        indexes = indexes(1:batch_size);        %sample without replacement    
+    end
 %% compute g
     g_mat = repmat(w, batch_size, 1);
     g_mat(:, d+1) = data(indexes, :) * w';
@@ -251,10 +258,10 @@ function [g, G, F] = STORM_GD(data, w, batch_size)
     G = diag(ones(d, 1));
     G(d+1, :) = mean(data(indexes, :));
 %% compute F
-    mid = 2 * mean(data(indexes, :) * g(1:d)')- g(d+1);  
+    mid = 2 * mean(data(indexes, :) * g(1:d)')- 2*g(d+1);  
             %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
     r = mean(data(indexes, :));
-    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (g(d + 1)+1) * r;
+    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (2*g(d + 1)+1) * r;
             %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
     F_dev(d+1) = -mid;
 %% compute gradient
@@ -263,14 +270,17 @@ end
 
 
 %The STORM estimator for portfolio management problem
-function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, batch_size_F, a_g, a_G, a_F)
+function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, batch_size_F, a_g, a_G, a_F, ifreplace)
     d = length(w);    %d is here N+1
     n = size(data, 1);%n is here . The shape is n*d
 %% compute g
     %Choose batch B_{t+1}^g of batch size batch_size
-    indexes = randperm(n);
-    indexes = indexes(1:batch_size_g);        %sample without replacement    
-    %indexes = datasample([1:n], batch_size_g); %sample with replacement
+    if ifreplace == 1
+       indexes = datasample([1:n], batch_size_g); %sample with replacement
+    else
+       indexes = randperm(n);
+       indexes = indexes(1:batch_size_g);        %sample without replacement    
+    end
     %g(x_{t+1}, B_{t+1}^g) before taking the mean
     g_mat = repmat(w, batch_size_g, 1);
     g_mat(:, d+1) = data(indexes, :) * w';
@@ -288,18 +298,21 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, ba
     G_t = G;
 %% compute grad f at steps t and t+1
     %Choose batch B_{t+1}^f of batch size batch_size
-    indexes = randperm(n);
-    indexes = indexes(1:batch_size_F);             %sample without replaceemnt
-    %indexes = datasample([1:n], batch_size_F);      %sample with replacement
+    if ifreplace == 1
+      indexes = datasample([1:n], batch_size_F);      %sample with replacement
+    else
+      indexes = randperm(n);
+      indexes = indexes(1:batch_size_F);             %sample without replaceemnt
+    end
     %calculate grad f at step t+1
-    mid = 2 * mean(data(indexes, :) * g(1:d)')- g(d+1);
+    mid = 2 * mean(data(indexes, :) * g(1:d)')- 2*g(d+1);
     r = mean(data(indexes, :));
-    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (g(d + 1)+1) * r;
+    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (2*g(d + 1)+1) * r;
     F_dev(d+1) = -mid;
     %calculate grad f at step t
-    mid_t = 2 * mean(data(indexes, :) * g_t(1:d)')- g_t(d+1);
+    mid_t = 2 * mean(data(indexes, :) * g_t(1:d)')- 2*g_t(d+1);
     r_t = mean(data(indexes, :));
-    F_dev_t = mean(diag(2 * data(indexes, :) * g_t(1:d)') * data(indexes, :)) - (g_t(d + 1)+1) * r_t;
+    F_dev_t = mean(diag(2 * data(indexes, :) * g_t(1:d)') * data(indexes, :)) - (2*g_t(d + 1)+1) * r_t;
     F_dev_t(d+1) = -mid_t;
     
 %% compute F update, gradient
