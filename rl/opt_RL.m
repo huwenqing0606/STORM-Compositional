@@ -1,3 +1,10 @@
+%%Optimization For STORM-Compositional over value function evaluation problem in reinforcement learning
+
+%code between separating dashed lines are for STORM
+%code else where are adapted from SARAH-Compositional to make a comparison
+
+%author: Wenqing Hu (Missouri S&T)
+
 function [resu_obj, resu_cal, resu_norm] = opt_RL(data, config)
 
 
