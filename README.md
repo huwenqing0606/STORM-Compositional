@@ -8,4 +8,4 @@ Applying STORM-Compositional to portfolio optimization. (a) folder "data", the d
 
 (2) Folder "rl"
 
-Applying STORM-Compositional to value-function evaluation in reinforcement learning. (a) run_cov2.m, the run file; (b) opt_RL.m, the optimization algorithms including SARAH-SCGD and STORM-Compositional; (e) computer_RL.m, calculate the objective function and its gradients.
+Applying STORM-Compositional to value-function evaluation in reinforcement learning. (a) run_cov2.m, the run file; (b) opt_RL.m, the optimization algorithms including SARAH-SCGD and STORM-Compositional; (e) computer_obj.m, calculate the objective function and its gradients.
