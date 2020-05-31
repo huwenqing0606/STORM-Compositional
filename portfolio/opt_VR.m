@@ -1,7 +1,7 @@
 %%Optimization For STORM-Compositional over portfolio optimization problem
 
 %code between separating dashed lines are for STORM
-%code else where are adapted from SARAH-Compositional to make a comparison
+%code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
 
 %author: Wenqing Hu (Missouri S&T)
 
@@ -55,13 +55,13 @@ if config.opt == 4
             end
         end
         norm_F = norm(F);
-        fprintf('STORM-C: epoch %d, grad norm = %.4f \n', epoch, norm_F); 
         xresu = x/count;
         if config.m == 1
             [obj, l2] = compute_port(data, xresu, config);
         else
             [obj, l2] = compute_port(data, w, config);
         end
+        fprintf('STORM-C: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj); 
         resu_obj(epoch) = obj;
         resu_norm(epoch) = norm_F;
         resu_cal(epoch) = grad_cal; 
@@ -97,6 +97,15 @@ else
         resu_obj(epoch) = obj;
         resu_norm(epoch) = norm_F;
         resu_cal(epoch) = grad_cal; 
+        if config.opt == 2
+            fprintf('SARAH-C: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+        %elseif config.opt == 1
+        %    fprintf('VRSC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+        %elseif config.opt == 0
+        %    fprintf('SCGD: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+        %else  %config.opt == 3
+        %    fprintf('ASC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+        end
         for iter = 1:config.max_iters
             if config.opt == 2
                 %opt == 2 indicates SARAH_C algorithm

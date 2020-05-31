@@ -5,6 +5,7 @@
 
 %author: Wenqing Hu (Missouri S&T)
 
+clearvars;
 
 rng(1, 'twister');
 
@@ -49,12 +50,13 @@ figure;
 config.m = 0;
 
 for di = 1:length(Problist) 
-
+    disp(Titlename(di));
+    
     %% load data
     probID = Problist(di);
     name = Probname{probID};
     %load(strcat(Probname{Problist(di)},'.mat'));
-    load(strcat('~/文档/work_STORM-SCGD/NeurIPS2020-code-submission-STORM-C/portfolio/data/', Probname{Problist(di)},'.mat'));
+    load(strcat('~/文档/work_STORM-SCGD/STORM-SCGD_source-code/portfolio/data/', Probname{Problist(di)},'.mat'));
     %load data_cov_2;
     [n, d] = size(data);
     config.lr = lrlist(di);
@@ -62,14 +64,15 @@ for di = 1:length(Problist)
     rng(1);
     minval = compute_min_val(data, config);
 
-    config.max_epochs = 500; %STORM shares the same epoch number with other Compositional Optimization algorithms
-
     config.gamma = 0.95;
     config.max_iters = 20; 
     config.outer_bs = 2000;
     config.inner_bs = 5;
     config.beta = 0.9;
     config.opt = 1;
+
+    
+    config.max_epochs = 100; %STORM shares the same epoch number with other Compositional Optimization algorithms
 
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
     
@@ -120,7 +123,6 @@ for di = 1:length(Problist)
  %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
 
     %the option of using STORM
-    disp(Titlename(di));
     config.opt = 4;
     [storm, grad_storm, norm_storm] = opt_VR(data, config);
     grad_storm = grad_storm/n;
