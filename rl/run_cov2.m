@@ -93,9 +93,9 @@ config.STORM_max_inner_iters = 20;
 config.STORM_lr = 0.1;
     
 config.STORM_initial_bs=100;
-config.STORM_loop_bs_g=50;
-config.STORM_loop_bs_G=50;
-config.STORM_loop_bs_F=50;
+config.STORM_loop_bs_g=20;
+config.STORM_loop_bs_G=20;
+config.STORM_loop_bs_F=20;
 
 config.STORM_a_g=0.02;
 config.STORM_a_G=0.02;
