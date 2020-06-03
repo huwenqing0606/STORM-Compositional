@@ -3,7 +3,7 @@
 %code between separating dashed lines are for STORM
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
 
-%author: Wenqing Hu (Missouri S&T)
+%author: Jiaojiao Yang (Anhui Normal University)
 
 clearvars;
 
@@ -72,7 +72,7 @@ for di = 1:length(Problist)
     config.opt = 1;
 
     
-    config.max_epochs = 100; %STORM shares the same epoch number with other Compositional Optimization algorithms
+    config.max_epochs = 500; %STORM shares the same epoch number with other Compositional Optimization algorithms
 
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
     

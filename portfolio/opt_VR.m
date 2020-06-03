@@ -3,7 +3,7 @@
 %code between separating dashed lines are for STORM
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
 
-%author: Wenqing Hu (Missouri S&T)
+%author: Jiaojiao Yang (Anhui Normal University)
 
 function [resu_obj, resu_cal, resu_norm] = opt_VR(data, config)
 
