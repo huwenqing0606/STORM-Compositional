@@ -1,3 +1,5 @@
+%This part of the code is taken directly from the SARAH-Compositional code and remain intact
+%used to compute the objective function and its gradient norm
 
 function [F, grad_l2] = compute_obj(data, w, config)
     dataF = data.F;

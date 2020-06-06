@@ -1,7 +1,8 @@
-%%Runfile For STORM-Compositional over reinforcement learning problem
+%%Optimization For STORM-Compositional over portfolio optimization problem
 
-%code between separating dashed lines are for STORM
+%code between separating dashed lines are for STORM, and are newly developed by us
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
+%we try to keep the original SARAH-Compositional code as much intact as we can
 
 %author: Jiaojiao Yang (Anhui Normal University)
 
@@ -80,14 +81,14 @@ grad_ascpg = grad_ascpg/n;
 
 
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
-   
-%set do or not do normalization step in STORM
+
+%set do or not do normalization step in STORM, normalization = 1, STORM-C uses normalization
 config.STORM_ifnormalization = 1;
-%set with or without replacement in minibatch sampling in STORM, with replacement = 1
+%set with or without replacement in minibatch sampling in STORM, with replacement = 1, STORM-C uses with replacement
 config.STORM_ifreplace = 1;
 %set the STORM single loop batchsizes, learning rate and the a parameters
 config.STORM_eps = 0.1;
-config.STORM_max_inner_iters = 20; 
+config.STORM_max_inner_iters = 35; 
 %STORM only uses one loop, but we decompose it into epochs and each epoch has same iteration as other compositional optimization algorithms
 %if the batchsizes of STORM are small and cannot match the IFO queries of other Compositional algorithms, we tune this inner iteration to be larger correspondingly
 config.STORM_lr = 0.1;
@@ -95,7 +96,7 @@ config.STORM_lr = 0.1;
 config.STORM_initial_bs=100;
 config.STORM_loop_bs_g=20;
 config.STORM_loop_bs_G=20;
-config.STORM_loop_bs_F=20;
+config.STORM_loop_bs_F=1;
 
 config.STORM_a_g=0.02;
 config.STORM_a_G=0.02;

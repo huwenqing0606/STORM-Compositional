@@ -1,7 +1,8 @@
-%%Optimization For STORM-Compositional over value function evaluation problem in reinforcement learning
+%%Optimization For STORM-Compositional over portfolio optimization problem
 
-%code between separating dashed lines are for STORM
+%code between separating dashed lines are for STORM, and are newly developed by us
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
+%we try to keep the original SARAH-Compositional code as much intact as we can
 
 %author: Jiaojiao Yang (Anhui Normal University)
 
@@ -102,15 +103,17 @@ for epoch = 1:config.max_epochs
     resu_obj(epoch) = obj;
     resu_norm(epoch) = norm_F;
     resu_cal(epoch) = grad_cal; 
+    %--------this part is added by us only to print and see the IFO queries and the objective function values--------------------
     if config.opt == 2
         fprintf('SARAH-C: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
-    %elseif config.opt == 1
-    %    fprintf('VRSC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
-    %elseif config.opt == 0
-    %    fprintf('SCGD: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
-    %else  %config.opt == 3
-    %    fprintf('ASC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+    elseif config.opt == 1
+        fprintf('VRSC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+    elseif config.opt == 0
+        fprintf('SCGD: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+    else  %config.opt == 3
+        fprintf('ASC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
     end
+    %----------------------------------------------------------------------------------------------------------------------------
     for iter = 1:config.max_iters
         if config.opt == 2
             %opt == 2 indicates SARAH_C algorithm
@@ -285,8 +288,8 @@ function [g, G, F] = SARAH(data, w, w_t, g, G, F, batch_size)
     G_t_(:, 2:2:end) = G_2_t;
     
     G_t = G;
-    %G = G_ + G_t_ + G; %was original SARAH-C code, but should be -G_t_, an error?
-    G = G_ - G_t_ + G; %should be the correct case
+    %G = G_ + G_t_ + G; %was original SARAH-C code, but should be -G_t_, an error? commented by us.
+    G = G_ - G_t_ + G; %should be the correct case, corrected by us
 %% compute F
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
@@ -343,6 +346,7 @@ function [g, G, F] = STORM_GD(data, w, batch_size, ifreplace)
     G(:, 1:2:end) = G_1;
     G(:, 2:2:end) = G_2;
 %% compute F
+    %The batchsize for f is taken to be 1
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
     indexes2 = 2* indexes;
@@ -416,13 +420,7 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, ba
     G = (1-a_G) * G + G_ - (1-a_G) * G_t_;
     
 %% compute grad f at steps t and t+1
-    %Choose minibatch B_{t+1}^f
-    if ifreplace == 1
-        indexes = datasample([1:n], batch_size_F); %sample with replacement
-    else
-        indexes = randperm(n);
-        indexes = indexes(1:batch_size_F);        %sample without replacement    
-    end
+    %Minibatch size B_{t+1}^f is chosen to be 1 only
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
     indexes2 = 2* indexes;
