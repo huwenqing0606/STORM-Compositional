@@ -349,7 +349,7 @@ function [g, G, F] = STORM_GD(data, w, batch_size, ifreplace)
     %The batchsize for f is taken to be 1
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
-    indexes2 = 2* indexes;
+    indexes2 = 2 * indexes;
     indexes = [indexes1, indexes2];
     
     mid = 2 * (g(1:2:end) - g(2:2:end));
@@ -421,9 +421,10 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, ba
     
 %% compute grad f at steps t and t+1
     %Minibatch size B_{t+1}^f is chosen to be 1 only
+    indexes = randperm(n);
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
-    indexes2 = 2* indexes;
+    indexes2 = 2 * indexes;
     indexes = [indexes1, indexes2];
     
     mid = 2 * (g(1:2:end) - g(2:2:end));
