@@ -1,6 +1,6 @@
 %%Optimization For STORM-Compositional over portfolio optimization problem
 
-%code between separating dashed lines are for STORM
+%code between separating dashed lines are for STORM-Compositional
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
 
 %author: Jiaojiao Yang (Anhui Normal University)
