@@ -78,7 +78,7 @@ for di = 1:length(Problist)
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
     
     %set do or not do normalization step in STORM, STORM-C does normalization, but we want to compare what happens if there is no normalization 
-    config.STORM_ifnormalization = 0;
+    config.STORM_ifnormalization = 1;
     %set with or without replacement in minibatch sampling in STORM, with replacement = 1, STORM-C uses with replacement sampling, but we want to compare
     config.STORM_ifreplace = 1;
     %set the STORM single loop batchsizes, learning rate and the a parameters
