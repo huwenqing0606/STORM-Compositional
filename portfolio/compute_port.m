@@ -1,3 +1,6 @@
+%This part of the code is taken directly from the SARAH-Compositional code and remain intact
+%used to compute the objective function and its gradient norm
+
 function [F, grad_l2] = compute_port(data, w, config)
     dim = length(w);
     n = size(data,1);

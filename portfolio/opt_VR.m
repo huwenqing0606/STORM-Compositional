@@ -1,7 +1,8 @@
 %%Optimization For STORM-Compositional over portfolio optimization problem
 
-%code between separating dashed lines are for STORM-Compositional
+%code between separating dashed lines are for STORM, and are newly developed by us
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
+%we try to keep the original SARAH-Compositional code as much intact as we can
 
 %author: Jiaojiao Yang (Anhui Normal University)
 
@@ -97,15 +98,17 @@ else
         resu_obj(epoch) = obj;
         resu_norm(epoch) = norm_F;
         resu_cal(epoch) = grad_cal; 
+        %-----------------------this part was added by us only to print and see IFO queries and gradient norms-----------------------
         if config.opt == 2
             fprintf('SARAH-C: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
-        %elseif config.opt == 1
-        %    fprintf('VRSC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
-        %elseif config.opt == 0
-        %    fprintf('SCGD: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
-        %else  %config.opt == 3
-        %    fprintf('ASC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+        elseif config.opt == 1
+            fprintf('VRSC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+        elseif config.opt == 0
+            fprintf('SCGD: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
+        else  %config.opt == 3
+            fprintf('ASC-PG: epoch %d, IFO = %d, grad norm = %.4f, objective value = %.4f \n', epoch, grad_cal, norm_F, obj);
         end
+        %----------------------------------------------------------------------------------------------------------------------------
         for iter = 1:config.max_iters
             if config.opt == 2
                 %opt == 2 indicates SARAH_C algorithm

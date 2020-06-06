@@ -1,7 +1,8 @@
 %%Runfile For STORM-Compositional over portfolio optimization problem
 
-%code between separating dashed lines are for STORM
+%code between separating dashed lines are for STORM, and are newly developed by us
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
+%we try to keep the original SARAH-Compositional code as much intact as we can
 
 %author: Jiaojiao Yang (Anhui Normal University)
 
@@ -76,9 +77,9 @@ for di = 1:length(Problist)
 
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
     
-    %set do or not do normalization step in STORM
-    config.STORM_ifnormalization = 1;
-    %set with or without replacement in minibatch sampling in STORM, with replacement = 1
+    %set do or not do normalization step in STORM, STORM-C does normalization, but we want to compare what happens if there is no normalization 
+    config.STORM_ifnormalization = 0;
+    %set with or without replacement in minibatch sampling in STORM, with replacement = 1, STORM-C uses with replacement sampling, but we want to compare
     config.STORM_ifreplace = 1;
     %set the STORM single loop batchsizes, learning rate and the a parameters
     config.STORM_eps = 0.1;

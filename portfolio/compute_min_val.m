@@ -1,9 +1,9 @@
-%This piece of code was taken directly from the original SARAH-C code paper at this link https://github.com/angeoz/SCGD
-%This is to contrast with the original SARAH-C paper 
+%This part of the code is taken directly from the SARAH-Compositional code and remain intact
+%used to compute the min value for the objective function
 
 function [out] = compute_min_val(data, config)
-%UNTITLED 姝ゅ鏄剧ず鏈夊叧姝ゅ嚱鏁扮殑鎽樿
-%   姝ゅ鏄剧ず璇︾粏璇存槑
+%UNTITLED 此处显示有关此函数的摘要
+%   此处显示详细说明
 [m n] = size(data);
 data_mean = mean(data, 1);
 %data_mid = data - data_mean;
