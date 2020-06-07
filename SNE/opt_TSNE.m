@@ -380,7 +380,7 @@ function [F_1, F_2] = compute_F(data, dataP, g, indexes);
     
    
     F_2 = (sum(dataP(indexes(1), :), 1) * n .* (1./g))';
-    for j=1:batch_size
+    for j=2:batch_size
         sample_F = indexes(j);
         F_2j = (sum(dataP(sample_F, :), 1) * n .* (1./g))';
         F_2 = F_2 + F_2j;
