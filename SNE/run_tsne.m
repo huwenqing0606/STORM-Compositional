@@ -4,7 +4,7 @@
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
 %we try to keep the original SARAH-Compositional code as much intact as we can
 
-%author: Jiaojiao Yang (Anhui Normal University)
+%author: Wenqing Hu (Missouri S&T)
 
 clearvars;
 
@@ -50,7 +50,7 @@ di = 1;
 minval = 1.5221e4;
 config.gamma = 0.95;
 config.max_iters = 10;  
-config.max_epochs = 10;
+config.max_epochs = 50;
 config.outer_bs = 1000; 
 config.inner_bs = 5; 
 config.lr = 1e-5;
@@ -99,7 +99,7 @@ config.STORM_a_F=0.01;
     
 %the option of using STORM
 config.opt = 4;
-config.max_epochs = 10; %one can tune the STORM max epochs to reach similar IFO compared with SARAH-C
+config.max_epochs = 50; %one can tune the STORM max epochs to reach similar IFO compared with SARAH-C
 [storm, grad_storm, norm_storm] = opt_TSNE(data, config);
 grad_storm = grad_storm/n;
 %STORM-END-------------------------------------------------------------------------------------------------------------------------------

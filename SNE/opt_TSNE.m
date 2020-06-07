@@ -1,11 +1,11 @@
 %%Optimization For STORM-Compositional over stochastic neighbor embedding
 
 %Due to complicacies in the calculations of SNE problem (involving 3rd-order tensors), 
-%we have redeveloped this optimization part of the code posted at http://github.com/angeoz/SCGD), 
-%although we still try to keep as much intact as we can.
-%The derivative calculations are incapsulated into several functions at the end of this piece of code.
+%we have redeveloped the whole optimization part including all necessary derivative calculations. 
+%Our derivative calculations are incapsulated into several functions at the end of this piece of code.
+%For the code posted at http://github.com/angeoz/SCGD, we still try to keep intact as much as we can.
 
-%author: Jiaojiao Yang (Anhui Normal University)
+%author: Wenqing Hu (Missouri S&T)
 
 function [resu_obj, resu_cal, resu_norm] = opt_TSNE(data, config)
 
@@ -232,6 +232,18 @@ end
 %%% another SVRG function
 
 
+
+%calculate the affinity matrix of input data points in a high-dimensional space
+function [dist_matrix] = Dist(data, sig)
+    if sig == 0
+        dist_matrix = exp(-squareform(pdist(data, 'euclidean')).^2);
+    else
+        dist_matrix = exp(-squareform(pdist(data, 'euclidean')).^2/(2 * sig^2));
+    end
+end
+
+
+
 %STORM-BEGIN-------------------------------------------------------------------------------------------------------------------------------
 
 %The STORM gradient initialization
@@ -258,7 +270,7 @@ function [g, G, F] = STORM_GD(data, w, batch_size, ifreplace)
 end
 
 
-%The STORM estimator for t-sne problem
+%The STORM estimator for SNE problem
 function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, batch_size_F, a_g, a_G, a_F, ifreplace)
     n = size(data.P, 1);
     d = size(w, 2);
@@ -318,18 +330,6 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, ba
     gradphi_2t = compute_gradphi_2(G_t, F_devt);
 
     F = (1-a_F)*F + gradphi_2 - (1-a_F)*gradphi_2t + F_dev_ - (1-a_F)*F_dev_t;
-end
-
-%STORM-END-------------------------------------------------------------------------------------------------------------------------------
-
-
-%calculate the affinity matrix of input data points in a high-dimensional space
-function [dist_matrix] = Dist(data, sig)
-    if sig == 0
-        dist_matrix = exp(-squareform(pdist(data, 'euclidean')).^2);
-    else
-        dist_matrix = exp(-squareform(pdist(data, 'euclidean')).^2/(2 * sig^2));
-    end
 end
 
 %calculate g_{n+j}(x, B) for j=1,2,...,n
@@ -399,3 +399,5 @@ function [gradphi_2] = compute_gradphi_2(G, F_2)
         gradphi_2(i, :) = G(:, :, i) * F_2;
     end
 end    
+
+%STORM-END-------------------------------------------------------------------------------------------------------------------------------

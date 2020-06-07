@@ -1,4 +1,4 @@
-%remain intact as for the original SARAH-C code
+%remain intact as in the original SARAH-C paper source code
 
 function labels = loadMNISTLabels(filename)
 %loadMNISTLabels returns a [number of MNIST images]x1 matrix containing

@@ -1,5 +1,4 @@
-%remain intact as it is for the original SARAH-C code
-
+%remain intact as the original SARAH-C paper source code
 function images = loadMNISTImages(filename)
 %loadMNISTImages returns a 28x28x[number of MNIST images] matrix containing
 %the raw MNIST images
