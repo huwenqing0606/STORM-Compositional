@@ -13,3 +13,7 @@ Applying STORM-Compositional to portfolio optimization. (a) folder "data", the d
 (2) Folder "rl"
 
 Applying STORM-Compositional to value-function evaluation in reinforcement learning. (a) run_cov2.m, the run file; (b) opt_RL.m, the optimization algorithms including SARAH-Compositional and STORM-Compositional; (c) compute_obj.m, calculate the objective function and its gradients.
+
+(3) Folder "SNE"
+
+Applying STORM-Compositional to Stochastic Neighbor Embedding. (a) run_tsne.m, the run file; (b) opt_TSNE.m, the optimization algorithms inclucing SARAH-Compositional and STORM-Compositional; (c) compute_tsne.m, calculate the objective function and its gradients; (d) loadMNISTLabels.m, loadMNISTImages.m, t10k-images-idx3-ubyte, data source and loading files for MNIST images set.
