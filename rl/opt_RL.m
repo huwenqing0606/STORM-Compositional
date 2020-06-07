@@ -290,6 +290,7 @@ function [g, G, F] = SARAH(data, w, w_t, g, G, F, batch_size)
     G_t = G;
     %G = G_ + G_t_ + G; %was original SARAH-C code, but should be -G_t_, an error? commented by us.
     G = G_ - G_t_ + G; %should be the correct case, corrected by us
+    			%without such correction STORM-C will not outperform SARAH-C, but this is correcting an error in SARAH-C
 %% compute F
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
