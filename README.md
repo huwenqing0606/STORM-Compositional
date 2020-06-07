@@ -1,5 +1,7 @@
 <b>STOchastic Recursive Momentum for Compositional Optimization</b>
 
+an article by Huizhuo Yuan and Wenqing Hu
+
 Code for STORM-Compositional Optimization
 
 <i>Authors</i>: Jiaojiao Yang (Anhui Normal University, Wuhu, Anhui, P.R.China) for topics (1) and (2) and Wenqing Hu (Missouri S&T) for topic (3)
