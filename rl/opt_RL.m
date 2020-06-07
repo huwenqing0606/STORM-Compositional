@@ -1,4 +1,4 @@
-%%Optimization For STORM-Compositional over portfolio optimization problem
+%%Optimization For STORM-Compositional over reinforcement learning problem
 
 %code between separating dashed lines are for STORM, and are newly developed by us
 %code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
