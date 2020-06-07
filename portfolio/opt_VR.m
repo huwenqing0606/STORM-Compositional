@@ -272,6 +272,7 @@ function [g, G, F] = STORM_GD(data, w, batch_size, ifreplace)
 %% compute F
     mid = 2 * mean(data(indexes, :) * g(1:d)')- 2*g(d+1);  
             %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
+            %it seems to us that without this factor of 2 the behavior of STORM-C will not be good at data set data_cov_4 and data_cov_20
     r = mean(data(indexes, :));
     F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (2*g(d + 1)+1) * r;
             %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
