@@ -3,7 +3,8 @@
 %Due to complicacies in the calculations of SNE problem (involving 3rd-order tensors), 
 %we have redeveloped the whole optimization part including all necessary derivative calculations. 
 %Our derivative calculations are incapsulated into several functions at the end of this piece of code.
-%For the code posted at http://github.com/angeoz/SCGD, we still try to keep intact as much as we can.
+%We feel there are heavy inconsistencies in the derivative calculations for the original SARAH-C code. 
+%However, for the code posted at http://github.com/angeoz/SCGD, we still try to keep intact as much as we can.
 
 %author: Wenqing Hu (Missouri S&T)
 
