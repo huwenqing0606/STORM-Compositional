@@ -1,8 +1,9 @@
 %%Optimization For STORM-Compositional over reinforcement learning problem
 
-%code between separating dashed lines are for STORM, and are newly developed by us
-%code else where are adapted from SARAH-Compositional and not changed (see http://github.com/angeoz/SCGD) to make a comparison
-%we try to keep the original SARAH-Compositional code as much intact as we can
+%Code between separating dashed lines are for STORM, and are newly developed by us.
+%Ccode else where are adapted from SARAH-Compositional (see http://github.com/angeoz/SCGD) to make a comparison.
+%But we have made the original code much simpler by encapsulating the derivative calculations into a few newly developed functions.
+%We corrected a few places in the original code when we spotted inconsistencies with our calculations.
 
 %author: Jiaojiao Yang (Anhui Normal University)
 
@@ -150,27 +151,16 @@ function [g, G, F] = GD(data, w, batch_size)
     indexes = randperm(n);
     indexes = indexes(1:batch_size);
 %% compute g
-    g_1 = dataF(:,:) * w';
-    g_2 = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * w')'), 2)./sum(dataP(:, indexes), 2);
-    g = zeros(1, 2*n);
-    g(1:2:end) = g_1;
-    g(2:2:end) = g_2;
+    g = compute_g(data, w, indexes, dataF, dataP, dataR);
 %% compute G
-    G_1 = dataF';
-    G_2 = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
-    G = zeros(d, 2*n);
-    G(:, 1:2:end) = G_1;
-    G(:, 2:2:end) = G_2;
+    G = compute_G(indexes, dataF, dataP);
 %% compute F
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
     indexes2 = 2* indexes;
     indexes = [indexes1, indexes2];
-    
-    mid = 2 * (g(1:2:end) - g(2:2:end));
-    F = zeros(2*n, 1);
-    F(1:2:end) = mid;
-    F(2:2:end) = -mid;
+    %batchsize for F is taken as 1
+    F = compute_F(g, dataF);
 %% compute gradient
     F = G(:, indexes) * F(indexes);
 end
@@ -184,29 +174,18 @@ function [g, G, F, y] = SCGD(data, w, y, batch_size, beta)
     indexes = randperm(n);
     indexes = indexes(1:batch_size);
 %% compute g
-    g_1 = dataF(:,:) * w';
-    g_2 = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * w')'), 2)./sum(dataP(:, indexes), 2);
-    g = zeros(1, 2*n);
-    g(1:2:end) = g_1;
-    g(2:2:end) = g_2;
+    g = compute_g(data, w, indexes, dataF, dataP, dataR);
 %% compute auxillary
-    y = (1-beta) * y + beta * g;    G_1 = dataF';
+    y = (1-beta) * y + beta * g;    
 %% compute G
-    G_1 = dataF';
-    G_2 = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
-    G = zeros(d, 2*n);
-    G(:, 1:2:end) = G_1;
-    G(:, 2:2:end) = G_2;
+    G = compute_G(indexes, dataF, dataP);
 %% compute F
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
     indexes2 = 2* indexes;
     indexes = [indexes1, indexes2];
-    
-    mid = 2 * (y(1:2:end) - y(2:2:end));
-    F = zeros(2*n, 1);
-    F(1:2:end) = mid;
-    F(2:2:end) = -mid;
+    %batchsize for F is taken as 1
+    F = compute_F(y, dataF);
 %% compute gradient
     F = G(:, indexes) * F(indexes);
 end
@@ -222,33 +201,21 @@ function [g, G, F, y] = ASCPG(data, w, w_t, y, batch_size, beta)
 %% update auxillary    
     z = (1-1/beta) * w_t + (1/beta)*w;
 %% compute g
-    g_1 = dataF(:,:) * z';
-    g_2 = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * z')'), 2)./sum(dataP(:, indexes), 2);
-    g = zeros(1, 2*n);
-    g(1:2:end) = g_1;
-    g(2:2:end) = g_2;
-    
+    g = compute_g(data, z, indexes, dataF, dataP, dataR);
+        %the difference between ASCPG and SCGD is that w is replaced by z here
 %% update auxillary
     y = (1-beta) * y + beta * g;
-%% compute G    
-    G_1 = dataF';
-    G_2 = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
-    G = zeros(d, 2*n);
-    G(:, 1:2:end) = G_1;
-    G(:, 2:2:end) = G_2;
+%% compute G
+    G = compute_G(indexes, dataF, dataP);
 %% compute F
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
-    indexes2 = 2* indexes;
+    indexes2 = 2 * indexes;
     indexes = [indexes1, indexes2];
-    
-    mid = 2 * (y(1:2:end) - y(2:2:end));
-    F = zeros(2*n, 1);
-    F(1:2:end) = mid;
-    F(2:2:end) = -mid;
+    %batchsize for F is taken as 1
+    F = compute_F(y, dataF);
 %% compute gradient
     F = G(:, indexes) * F(indexes);
-
 end
 
 function [g, G, F] = SARAH(data, w, w_t, g, G, F, batch_size)
@@ -260,52 +227,24 @@ function [g, G, F] = SARAH(data, w, w_t, g, G, F, batch_size)
     indexes = randperm(n);
     indexes = indexes(1:batch_size);
 %% compute g
-    g_1 = dataF(:,:) * w';
-    g_2 = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * w')'), 2)./sum(dataP(:, indexes), 2);
-    g_mat = zeros(1, 2*n);
-    g_mat(1:2:end) = g_1;
-    g_mat(2:2:end) = g_2;
-    
-    g_1_t = dataF(:,:) * w_t';
-    g_2_t = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * w_t')'), 2)./sum(dataP(:, indexes), 2);
-    g_mat_t = zeros(1, 2*n);
-    g_mat_t(1:2:end) = g_1_t;
-    g_mat_t(2:2:end) = g_2_t;
+    g_mat = compute_g(data, w, indexes, dataF, dataP, dataR);
+    g_mat_t = compute_g(data, w_t, indexes, dataF, dataP, dataR);
     g_t = g;
     g = g_mat - g_mat_t + g;
 %% compute G
-    G_1 = dataF';
-    G_2 = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
-    G_ = zeros(d, 2*n);
-    G_(:, 1:2:end) = G_1;
-    G_(:, 2:2:end) = G_2;
-    
-    
-    G_1_t = dataF';
-    G_2_t = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
-    G_t_ = zeros(d, 2*n);
-    G_t_(:, 1:2:end) = G_1_t;
-    G_t_(:, 2:2:end) = G_2_t;
-    
+    G_ = compute_G(indexes, dataF, dataP);
+    G_t_ = compute_G(indexes, dataF, dataP);
     G_t = G;
     %G = G_ + G_t_ + G; %was original SARAH-C code, but should be -G_t_, an error? commented by us.
     G = G_ - G_t_ + G; %should be the correct case, corrected by us
-    			%without such correction STORM-C will not outperform SARAH-C, but this is correcting an error in SARAH-C
 %% compute F
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
     indexes2 = 2* indexes;
     indexes = [indexes1, indexes2];
-    
-    mid = 2 * (g(1:2:end) - g(2:2:end));
-    F_ = zeros(2*n, 1);
-    F_(1:2:end) = mid;
-    F_(2:2:end) = -mid;
-    
-    mid_t = 2 * (g_t(1:2:end) - g_t(2:2:end));
-    F_t_ = zeros(2*n, 1);
-    F_t_(1:2:end) = mid_t;
-    F_t_(2:2:end) = -mid_t;
+    %batchsize for F is 1
+    F_ = compute_F(g, dataF);
+    F_t_ = compute_F(g_t, dataF);
 
 %% compute gradient
     F = F + G(:, indexes) * F_(indexes) - G_t(:, indexes) * F_t_(indexes);
@@ -335,28 +274,16 @@ function [g, G, F] = STORM_GD(data, w, batch_size, ifreplace)
         indexes = indexes(1:batch_size);        %sample without replacement    
     end
 %% compute g
-    g_1 = dataF(:,:) * w';
-    g_2 = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * w')'), 2)./sum(dataP(:, indexes), 2);
-    g = zeros(1, 2*n);
-    g(1:2:end) = g_1;
-    g(2:2:end) = g_2;
+    g = compute_g(data, w, indexes, dataF, dataP, dataR);
 %% compute G
-    G_1 = dataF';
-    G_2 = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
-    G = zeros(d, 2*n);
-    G(:, 1:2:end) = G_1;
-    G(:, 2:2:end) = G_2;
+    G = compute_G(indexes, dataF, dataP);
 %% compute F
-    %The batchsize for f is taken to be 1
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
     indexes2 = 2 * indexes;
     indexes = [indexes1, indexes2];
-    
-    mid = 2 * (g(1:2:end) - g(2:2:end));
-    F = zeros(2*n, 1);
-    F(1:2:end) = mid;
-    F(2:2:end) = -mid;
+    %The batchsize for f is taken to be 1
+    F = compute_F(g, dataF);
 %% compute gradient
     F = G(:, indexes) * F(indexes);
 end
@@ -378,17 +305,9 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, ba
         indexes = indexes(1:batch_size_g);        %sample without replacement    
     end
     %g(x_{t+1}, B_{t+1}^g) 
-    g_1 = dataF(:,:) * w';
-    g_2 = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * w')'), 2)./sum(dataP(:, indexes), 2);
-    g_mat = zeros(1, 2*n);
-    g_mat(1:2:end) = g_1;
-    g_mat(2:2:end) = g_2;
-    %g(x_t, B_{t+1}^g) 
-    g_1_t = dataF(:,:) * w_t';
-    g_2_t = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * w_t')'), 2)./sum(dataP(:, indexes), 2);
-    g_mat_t = zeros(1, 2*n);
-    g_mat_t(1:2:end) = g_1_t;
-    g_mat_t(2:2:end) = g_2_t;
+    g_mat = compute_g(data, w, indexes, dataF, dataP, dataR);
+    %g(x_t, B_{t+1}^g)
+    g_mat_t = compute_g(data, w_t, indexes, dataF, dataP, dataR);
     %g_t
     g_t = g;
     %%calculate g_{t+1} = (1-a_g)g_t + a_g g(x_{t+1}, B_{t+1}^g) + (1-a_g)[g(x_{t+1}, B_{t+1}^g)-g(x_t, B_{t+1}^g)]
@@ -403,17 +322,9 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, ba
         indexes = indexes(1:batch_size_G);        %sample without replacement    
     end
     %G(x_{t+1}, B_{t+1}^{partial g})
-    G_1 = dataF';
-    G_2 = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
-    G_ = zeros(d, 2*n);
-    G_(:, 1:2:end) = G_1;
-    G_(:, 2:2:end) = G_2;
+    G_ = compute_G(indexes, dataF, dataP);
     %G(x_t, B_{t+1}^{partial g}
-    G_1_t = dataF';
-    G_2_t = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
-    G_t_ = zeros(d, 2*n);
-    G_t_(:, 1:2:end) = G_1_t;
-    G_t_(:, 2:2:end) = G_2_t;
+    G_t_ = compute_G(indexes, dataF, dataP);
     %record G_t
     G_t = G;
     %%calculate G_{t+1} = (1-a_G)G_t + a_G G(x_{t+1}, B_{t+1}^g) + (1-a_G)[G(x_{t+1}, B_{t+1}^g)-G(x_t, B_{t+1}^g)]
@@ -421,29 +332,52 @@ function [g, G, F] = STORM(data, w, w_t, g, G, F, batch_size_g, batch_size_G, ba
     G = (1-a_G) * G + G_ - (1-a_G) * G_t_;
     
 %% compute grad f at steps t and t+1
-    %Minibatch size B_{t+1}^f is chosen to be 1 only
     indexes = randperm(n);
     indexes = indexes(1);
     indexes1 = 2 * indexes - 1;
     indexes2 = 2 * indexes;
     indexes = [indexes1, indexes2];
-    
-    mid = 2 * (g(1:2:end) - g(2:2:end));
-    F_ = zeros(2*n, 1);
-    F_(1:2:end) = mid;
-    F_(2:2:end) = -mid;
-    
-    mid_t = 2 * (g_t(1:2:end) - g_t(2:2:end));
-    F_t_ = zeros(2*n, 1);
-    F_t_(1:2:end) = mid_t;
-    F_t_(2:2:end) = -mid_t;
-    
+    %Minibatch size B_{t+1}^f is chosen to be 1 only    
+    F_ = compute_F(g, dataF);
+    F_t_ = compute_F(g_t, dataF);
 %% compute F update, gradient
     %calculate F_{t+1}=(1-a_F)F_t + a_F G^Tgrad_f(x_{t+1}, B_{t+1}^f) + (1-a_F)[G^Tgrad_f(x_{t+1}, B_{t+1}^f)- G_t^Tgrad_f(x_t, B_t)]
     %                 =(1-a_F)F_t + G^Tgrad_f(x_{t+1}, B_{t+1}^f) - (1-a_F) G_t^Tgrad_f(x_t, B_t)               
     F = (1-a_F)*F + G(:, indexes) * F_(indexes) - (1-a_F)*(G_t(:, indexes) * F_t_(indexes));
 end
 
+
+
+%compute g
+function [g] = compute_g(data, w, indexes, dataF, dataP, dataR)
+    n = size(dataF, 1);
+    d = size(dataF, 2);
+    g_1 = dataF(:,:) * w';
+    g_2 = sum(dataP(:, indexes).* (dataR(:, indexes) + 0.95 * (dataF(indexes, :) * w')'), 2)./sum(dataP(:, indexes), 2);
+    g = zeros(1, 2*n);
+    g(1:2:end) = g_1;
+    g(2:2:end) = g_2;    
+end
+
+%compute G
+function [G] = compute_G(indexes, dataF, dataP)
+    n = size(dataF, 1);
+    d = size(dataF, 2);
+    G_1 = dataF';
+    G_2 = (dataP(:, indexes) * 0.95 * dataF(indexes, :)./sum(dataP(:, indexes), 2))';
+    G = zeros(d, 2*n);
+    G(:, 1:2:end) = G_1;
+    G(:, 2:2:end) = G_2;
+end
+
+%compute grad f, batchsize is always 1
+function [F] = compute_F(g, dataF)
+    n = size(dataF, 1);
+    mid = 2 * (g(1:2:end) - g(2:2:end));
+    F = zeros(2*n, 1);
+    F(1:2:end) = mid;
+    F(2:2:end) = -mid;  
+end
 %STORM-END-------------------------------------------------------------------------------------------------------------------------------
 
     
