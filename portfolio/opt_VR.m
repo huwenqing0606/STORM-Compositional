@@ -151,9 +151,11 @@ function [g, G, F] = GD(data, w, batch_size)
     G = diag(ones(d, 1));
     G(d+1, :) = mean(data(indexes, :));
 %% compute F
-    mid = 2 * mean(data(indexes, :) * g(1:d)')- g(d+1);
+    mid = 2 * mean(data(indexes, :) * g(1:d)')- 2*g(d+1);
+                                   %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
     r = mean(data(indexes, :));
-    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (g(d + 1)+1) * r;
+    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (2*g(d + 1)+1) * r;
+                                   %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
     F_dev(d+1) = -mid;
 %% compute gradient
     F = F_dev * G;
@@ -175,9 +177,11 @@ function [g, G, F, y] = SCGD(data, w, y, batch_size, beta)
     G = diag(ones(d, 1));
     G(d+1, :) = mean(data(indexes, :));
 %% compute F
-    mid = 2 * mean(data(indexes, :) * y(1:d)')- y(d+1);
+    mid = 2 * mean(data(indexes, :) * y(1:d)')- 2*y(d+1);
+                                    %the factor 2 in front of y(d+1) was missed everywhere in SARAH-C code, error?
     r = mean(data(indexes, :));
-    F_dev = mean(diag(2 * data(indexes, :) * y(1:d)') * data(indexes, :)) - (y(d + 1)+1) * r;
+    F_dev = mean(diag(2 * data(indexes, :) * y(1:d)') * data(indexes, :)) - (2*y(d + 1)+1) * r;
+                                    %the factor 2 in front of y(d+1) was missed everywhere in SARAH-C code, error?
     F_dev(d+1) = -mid;
 %% compute gradient
     F = F_dev * G;
@@ -202,9 +206,11 @@ function [g, G, F, y] = ASCPG(data, w, w_t, y, batch_size, beta)
     G = diag(ones(d, 1));
     G(d+1, :) = mean(data(indexes, :));
 %% compute F
-    mid = 2 * mean(data(indexes, :) * y(1:d)')- y(d+1);
+    mid = 2 * mean(data(indexes, :) * y(1:d)')- 2*y(d+1);
+                                    %the factor 2 in front of y(d+1) was missed everywhere in SARAH-C code, error?
     r = mean(data(indexes, :));
-    F_dev = mean(diag(2 * data(indexes, :) * y(1:d)') * data(indexes, :)) - (y(d + 1)+1) * r;
+    F_dev = mean(diag(2 * data(indexes, :) * y(1:d)') * data(indexes, :)) - (2*y(d + 1)+1) * r;
+                                    %the factor 2 in front of y(d+1) was missed everywhere in SARAH-C code, error?
     F_dev(d+1) = -mid;
 %% compute gradient
     F = F_dev * G;
@@ -230,14 +236,18 @@ function [g, G, F] = SARAH(data, w, w_t, g, G, F, batch_size)
 %% compute F
     indexes = randperm(n);
     indexes = indexes(1);
-    mid = 2 * mean(data(indexes, :) * g(1:d)')- g(d+1);
+    mid = 2 * mean(data(indexes, :) * g(1:d)')- 2*g(d+1);
+                                    %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
     r = mean(data(indexes, :));
-    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (g(d + 1)+1) * r;
+    F_dev = mean(diag(2 * data(indexes, :) * g(1:d)') * data(indexes, :)) - (2*g(d + 1)+1) * r;
+                                    %the factor 2 in front of g(d+1) was missed everywhere in SARAH-C code, error?
     F_dev(d+1) = -mid;
     
-    mid_t = 2 * mean(data(indexes, :) * g_t(1:d)')- g_t(d+1);
+    mid_t = 2 * mean(data(indexes, :) * g_t(1:d)')- 2*g_t(d+1);
+                                    %the factor 2 in front of g_t(d+1) was missed everywhere in SARAH-C code, error?
     r_t = mean(data(indexes, :));
-    F_dev_t = mean(diag(2 * data(indexes, :) * g_t(1:d)') * data(indexes, :)) - (g_t(d + 1)+1) * r_t;
+    F_dev_t = mean(diag(2 * data(indexes, :) * g_t(1:d)') * data(indexes, :)) - (2*g_t(d + 1)+1) * r_t;
+                                    %the factor 2 in front of g_t(d+1) was missed everywhere in SARAH-C code, error?
     F_dev_t(d+1) = -mid_t;
 %% compute gradient
     F = F_dev * G - F_dev_t * G_t + F;
