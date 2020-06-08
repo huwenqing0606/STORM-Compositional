@@ -6,8 +6,6 @@ Code for STORM-Compositional Optimization
 
 <i>Authors</i>: Jiaojiao Yang (Anhui Normal University, Wuhu, Anhui, P.R.China) for topics (1) and (2) and Wenqing Hu (Missouri S&T) for topic (3)
 
-<i>Remark</i>: The part of the code for SARAH-C and other previously announced algorithms are adapted from the orginal code for SARAH-Compositional open sourced at https://github.com/angeoz/SCGD, and we try to remain the parts for these previously announced algorithms as much intact as possible. However, the part of the code for STORM-Compositional in our paper are completely newly developed. This is only in order to set a standard to compare the convergence properties between our new STORM-Compositional with the original SARAH-Compositional and other previously announced benchmark algorithms. In a few places when we find serious inconsistencies of the original code with our calculations, that also cause significant inaccuracies in experimental performance, we modified the original code correpondingly, or we have re-developed the original code completely. 
-
 (1) Folder "portfolio"
 
 Applying STORM-Compositional to portfolio optimization. (a) folder "data", the data set; (b) run_pot2.m, the run file; (c) opt_VR.m, the optimization algorithms including SARAH-Compositional and STORM-Compositional; (d) compute_min_val.m, calculate the minimal objective function; (e) computer_port.m, calculate the objective function and its gradients.
