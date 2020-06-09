@@ -114,7 +114,7 @@ plot(grad_scgd, smooth(scgd-minval, 10), '--','Color', [0.6350 0.0780 0.1840],  
 plot(grad_ascpg, smooth(ascpg-minval, 10), ':', 'Color', [0.3010 0.7450 0.9330], 'LineWidth', 1, 'MarkerSize', 5, 'MarkerIndices', 1:2:length(grad_ascpg));
 plot(grad_storm, smooth(storm-minval, 10), '-X', 'Color', [1 0 0], 'LineWidth', 1, 'MarkerSize', 5, 'MarkerIndices', 1:2:length(grad_storm));
 legend('VRSC-PG','SARAH-C', 'SCGD', 'ASC-PG', 'STORM-C');
-%xlim([0, 50]);
+xlim([0, 50]);
 xlabel('Grads Calculation/n');
 ylabel('Objective Value Gap');
 title('t-SNE on MNist Dataset')
@@ -125,7 +125,7 @@ semilogy(grad_svrg, smooth(norm_svrg, 10), '-Vb', grad_spider, smooth(norm_spide
 legend('VRSC-PG','SARAH-C', 'SCGD', 'ASC-PG', 'STORM-C');
 xlabel('Grads Calculation/n');
 ylabel('Gradient Norm');
-%xlim([0, 50]);
+xlim([0, 50]);
 title('t-SNE on MNist Dataset');
 
 
